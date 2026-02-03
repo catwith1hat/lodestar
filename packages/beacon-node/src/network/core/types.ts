@@ -13,6 +13,11 @@ import {CommitteeSubscription} from "../subnets/interface.js";
 
 export type MultiaddrStr = string;
 
+export type DirectPeerInfo = {
+  peerId: string;
+  addrs: string[];
+};
+
 // Interface shared by main Network class, and all backends
 export interface INetworkCorePublic {
   // Peer manager control
@@ -36,6 +41,11 @@ export interface INetworkCorePublic {
   dumpGossipPeerScoreStats(): Promise<PeerScoreStatsDump>;
   dumpDiscv5KadValues(): Promise<string[]>;
   dumpMeshPeers(): Promise<Record<string, string[]>>;
+
+  // Direct peers management
+  getDirectPeers(): Promise<DirectPeerInfo[]>;
+  addDirectPeer(peer: string): Promise<DirectPeerInfo | null>;
+  removeDirectPeer(peer: string): Promise<boolean>;
 }
 
 /**

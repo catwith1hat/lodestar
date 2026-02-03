@@ -265,6 +265,19 @@ export class WorkerNetworkCore implements INetworkCore {
   dumpMeshPeers(): Promise<Record<string, string[]>> {
     return this.getApi().dumpMeshPeers();
   }
+
+  // Direct peers management
+
+  getDirectPeers(): Promise<{peerId: string; addrs: string[]}[]> {
+    return this.getApi().getDirectPeers();
+  }
+  addDirectPeer(peer: string): Promise<{peerId: string; addrs: string[]} | null> {
+    return this.getApi().addDirectPeer(peer);
+  }
+  removeDirectPeer(peer: string): Promise<boolean> {
+    return this.getApi().removeDirectPeer(peer);
+  }
+
   writeNetworkThreadProfile(durationMs: number, dirpath: string): Promise<string> {
     return this.getApi().writeProfile(durationMs, dirpath);
   }

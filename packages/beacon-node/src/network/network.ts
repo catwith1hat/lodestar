@@ -665,6 +665,20 @@ export class Network implements INetwork {
     return this.core.dumpMeshPeers();
   }
 
+  // Direct peers management
+
+  getDirectPeers(): Promise<{peerId: string; addrs: string[]}[]> {
+    return this.core.getDirectPeers();
+  }
+
+  addDirectPeer(peer: string): Promise<{peerId: string; addrs: string[]} | null> {
+    return this.core.addDirectPeer(peer);
+  }
+
+  removeDirectPeer(peer: string): Promise<boolean> {
+    return this.core.removeDirectPeer(peer);
+  }
+
   async dumpGossipQueue(gossipType: GossipType): Promise<PendingGossipsubMessage[]> {
     return this.networkProcessor.dumpGossipQueue(gossipType);
   }

@@ -102,6 +102,11 @@ export interface INetwork extends INetworkCorePublic {
   writeDiscv5Profile(durationMs: number, dirpath: string): Promise<string>;
   writeNetworkHeapSnapshot(prefix: string, dirpath: string): Promise<string>;
   writeDiscv5HeapSnapshot(prefix: string, dirpath: string): Promise<string>;
+
+  // Direct peers management
+  getDirectPeers(): Promise<{peerId: string; addrs: string[]}[]>;
+  addDirectPeer(peer: string): Promise<{peerId: string; addrs: string[]} | null>;
+  removeDirectPeer(peer: string): Promise<boolean>;
 }
 
 export type LodestarComponents = {

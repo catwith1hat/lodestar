@@ -505,6 +505,27 @@ export class NetworkCore implements INetworkCore {
     return meshPeers;
   }
 
+  // Direct peers management
+
+  async getDirectPeers(): Promise<{peerId: string; addrs: string[]}[]> {
+    return this.gossip.getDirectPeers();
+  }
+
+  async addDirectPeer(peerStr: string): Promise<{peerId: string; addrs: string[]} | null> {
+    const result = this.gossip.addDirectPeer(peerStr);
+    if (result) {
+      // Also connect to the peer if we got valid address info
+      const peer = peerIdFromString(result.peerId);
+      await this.libp2p.peerStore.merge(peer, {multiaddrs: result.addrs.map(multiaddr)});
+      await this.libp2p.dial(peer);
+    }
+    return result;
+  }
+
+  async removeDirectPeer(peerIdStr: string): Promise<boolean> {
+    return this.gossip.removeDirectPeer(peerIdStr);
+  }
+
   async writeNetworkThreadProfile(): Promise<string> {
     throw new Error("Method not implemented, please configure network thread");
   }

@@ -136,6 +136,9 @@ describe("data serialization through worker boundary", () => {
     writeDiscv5Profile: [0, ""],
     setTargetGroupCount: [4],
     setAdvertisedGroupCount: [4],
+    getDirectPeers: [],
+    addDirectPeer: ["/ip4/1.2.3.4/tcp/13000/p2p/" + peerId],
+    removeDirectPeer: [peerId],
   };
 
   const lodestarPeer: routes.lodestar.LodestarNodePeer = {
@@ -207,6 +210,9 @@ describe("data serialization through worker boundary", () => {
     writeDiscv5Profile: "",
     setAdvertisedGroupCount: null,
     setTargetGroupCount: null,
+    getDirectPeers: [{peerId: peerId, addrs: []}],
+    addDirectPeer: {peerId: peerId, addrs: []},
+    removeDirectPeer: true,
   };
 
   type TestCase = {id: string; data: unknown; shouldFail?: boolean};

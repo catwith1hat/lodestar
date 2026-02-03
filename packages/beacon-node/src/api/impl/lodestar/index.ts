@@ -244,6 +244,28 @@ export function getLodestarApi({
         data: chain.validatorMonitor?.getMonitoredValidatorIndices() ?? [],
       };
     },
+
+    // Direct peers management
+
+    async getDirectPeers() {
+      return {
+        data: await network.getDirectPeers(),
+      };
+    },
+
+    async addDirectPeer({peer}) {
+      const result = await network.addDirectPeer(peer);
+      if (result === null) {
+        throw new ApiError(400, `Failed to parse peer: ${peer}. Expected multiaddr with peer ID or ENR.`);
+      }
+    },
+
+    async removeDirectPeer({peer}) {
+      const removed = await network.removeDirectPeer(peer);
+      if (!removed) {
+        throw new ApiError(404, `Peer not found in direct peers: ${peer}`);
+      }
+    },
   };
 }
 

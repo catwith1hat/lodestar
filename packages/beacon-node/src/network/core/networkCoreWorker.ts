@@ -159,6 +159,12 @@ const libp2pWorkerApi: NetworkWorkerApi = {
   dumpGossipPeerScoreStats: () => core.dumpGossipPeerScoreStats(),
   dumpDiscv5KadValues: () => core.dumpDiscv5KadValues(),
   dumpMeshPeers: () => core.dumpMeshPeers(),
+
+  // Direct peers management
+  getDirectPeers: () => core.getDirectPeers(),
+  addDirectPeer: (peer) => core.addDirectPeer(peer),
+  removeDirectPeer: (peer) => core.removeDirectPeer(peer),
+
   writeProfile: async (durationMs: number, dirpath: string) => {
     return profileThread(ProfileThread.NETWORK, durationMs, dirpath);
   },

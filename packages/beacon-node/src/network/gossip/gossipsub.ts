@@ -192,6 +192,75 @@ export class Eth2Gossipsub extends GossipSub {
     this.unsubscribe(topicStr);
   }
 
+  /**
+   * Get current direct peers.
+   *
+   * Note: GossipSub's `direct` Set is public but there's no official API for runtime management.
+   * We directly read/modify the Set, which is safe based on how it's used internally:
+   * - directConnect() periodically connects to peers in the Set
+   * - Direct peers bypass GRAFT/PRUNE and receive messages directly
+   */
+  getDirectPeers(): {peerId: string; addrs: string[]}[] {
+    const result: {peerId: string; addrs: string[]}[] = [];
+    for (const peerIdStr of this.direct) {
+      // We don't have direct access to addresses stored in peerStore from here,
+      // so we return empty addrs array. The actual multiaddrs can be obtained
+      // from the libp2p peerStore at a higher level.
+      result.push({
+        peerId: peerIdStr,
+        addrs: [],
+      });
+    }
+    return result;
+  }
+
+  /**
+   * Add a direct peer at runtime. Input can be multiaddr with peer ID or ENR.
+   *
+   * Modifies GossipSub's public `direct` Set directly. The caller (NetworkCore)
+   * is responsible for also adding the peer's addresses to libp2p's peerStore
+   * and initiating a connection.
+   */
+  addDirectPeer(peerStr: string): {peerId: string; addrs: string[]} | null {
+    const parsed = parseDirectPeers([peerStr], this.logger);
+    if (parsed.length === 0) {
+      return null;
+    }
+
+    const addrInfo = parsed[0];
+    const peerIdStr = addrInfo.id.toString();
+
+    // Add to direct peers set
+    this.direct.add(peerIdStr);
+
+    this.logger.info("Added direct peer via API", {
+      peerId: peerIdStr,
+      addrs: addrInfo.addrs.map((a) => a.toString()).join(", "),
+    });
+
+    return {
+      peerId: peerIdStr,
+      addrs: addrInfo.addrs.map((a) => a.toString()),
+    };
+  }
+
+  /**
+   * Remove a direct peer by peer ID.
+   *
+   * The peer remains connected but will no longer be treated as a direct peer
+   * (normal GRAFT/PRUNE mesh negotiation will resume).
+   */
+  removeDirectPeer(peerIdStr: string): boolean {
+    const existed = this.direct.has(peerIdStr);
+    this.direct.delete(peerIdStr);
+
+    if (existed) {
+      this.logger.info("Removed direct peer via API", {peerId: peerIdStr});
+    }
+
+    return existed;
+  }
+
   private onScrapeLodestarMetrics(metrics: Eth2GossipsubMetrics, networkConfig: NetworkConfig): void {
     const mesh = this.mesh;
     // biome-ignore lint/complexity/useLiteralKeys: `topics` is a private attribute

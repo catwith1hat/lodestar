@@ -90,6 +90,11 @@ export type BlacklistedBlock = {root: RootHex; slot: Slot | null};
 
 export type LodestarThreadType = "main" | "network" | "discv5";
 
+export type DirectPeer = {
+  peerId: string;
+  addrs: string[];
+};
+
 const HistoricalSummariesResponseType = new ContainerType(
   {
     slot: ssz.Slot,
@@ -316,6 +321,42 @@ export type Endpoints = {
     {root: RootHex; slot: Slot}[],
     EmptyMeta
   >;
+
+  /** Get current GossipSub direct peers */
+  getDirectPeers: Endpoint<
+    // ⏎
+    "GET",
+    EmptyArgs,
+    EmptyRequest,
+    DirectPeer[],
+    EmptyMeta
+  >;
+
+  /**
+   * Add a GossipSub direct peer. Accepts multiaddr with peer ID or ENR.
+   * Direct peers maintain permanent mesh connections without GRAFT/PRUNE.
+   */
+  addDirectPeer: Endpoint<
+    // ⏎
+    "POST",
+    {peer: string},
+    {query: {peer: string}},
+    EmptyResponseData,
+    EmptyMeta
+  >;
+
+  /**
+   * Remove a GossipSub direct peer by peer ID.
+   * The peer remains connected but is no longer treated as a direct peer.
+   */
+  removeDirectPeer: Endpoint<
+    // ⏎
+    "DELETE",
+    {peer: string},
+    {query: {peer: string}},
+    EmptyResponseData,
+    EmptyMeta
+  >;
 };
 
 export function getDefinitions(_config: ChainForkConfig): RouteDefinitions<Endpoints> {
@@ -501,6 +542,32 @@ export function getDefinitions(_config: ChainForkConfig): RouteDefinitions<Endpo
       method: "GET",
       req: EmptyRequestCodec,
       resp: JsonOnlyResponseCodec,
+    },
+    getDirectPeers: {
+      url: "/eth/v1/lodestar/direct_peers",
+      method: "GET",
+      req: EmptyRequestCodec,
+      resp: JsonOnlyResponseCodec,
+    },
+    addDirectPeer: {
+      url: "/eth/v1/lodestar/direct_peers",
+      method: "POST",
+      req: {
+        writeReq: ({peer}) => ({query: {peer}}),
+        parseReq: ({query}) => ({peer: query.peer}),
+        schema: {query: {peer: Schema.StringRequired}},
+      },
+      resp: EmptyResponseCodec,
+    },
+    removeDirectPeer: {
+      url: "/eth/v1/lodestar/direct_peers",
+      method: "DELETE",
+      req: {
+        writeReq: ({peer}) => ({query: {peer}}),
+        parseReq: ({query}) => ({peer: query.peer}),
+        schema: {query: {peer: Schema.StringRequired}},
+      },
+      resp: EmptyResponseCodec,
     },
   };
 }
